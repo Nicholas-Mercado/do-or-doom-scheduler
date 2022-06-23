@@ -11,6 +11,8 @@ WORKDIR /code
 # Install dependencies
 COPY requirements.txt /code/
 RUN pip install -r requirements.txt
-
+COPY cron.py /code/
+RUN python3 cron.py
+# CMD [ "python", "./cron.py" ]
 # Copy project
 COPY . /code/
