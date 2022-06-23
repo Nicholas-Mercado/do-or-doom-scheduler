@@ -3,7 +3,11 @@ from schedule import every, repeat, run_pending
 import time
 import requests
 import datetime
-# import twi
+import os
+from twilio.rest import Client
+# from dotenv import load_dotenv
+
+
 
 set_sleep = 1
 @repeat(every(1).seconds)
@@ -28,7 +32,21 @@ def job():
                 print("DOOM!")
                 set_sleep = 50
                 print("sleeping for: ", set_sleep)
-                # do Twillo stuff here
+
+
+                account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+                auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+                client = Client(account_sid, auth_token)
+
+
+                message = client.messages.create(
+                    messaging_service_sid = os.getenv('MESSAGE_SID'),
+                    body='hello again',
+                    to=os.getenv('PHONE_NUMBER')
+                    )
+
+                print("sent doom msg")
+
                 break
             else:
                 print("You've still got time!")
@@ -40,5 +58,7 @@ while True:
     run_pending()
     time.sleep(set_sleep)
     print("happening")
+
+
 
 
