@@ -1,30 +1,64 @@
-from urllib import response
+# from urllib import response
 from schedule import every, repeat, run_pending
 import time
 import requests
 import datetime
+import os
+from twilio.rest import Client
+# from dotenv import load_dotenv
 
-print("hello! form Cron!")
-# @repeat(every(1).seconds)
+
+
+set_sleep = 1
+@repeat(every(1).seconds)
 def job():
-    print("this is job")
+    global set_sleep
     response = requests.get("https://do-or-doom-api.herokuapp.com/api/v1/tasks/")
     data = response.json()
-    print(data)
-
+    print("Hitting tasks api")
+    current_datetime = datetime.datetime.now()
     for x in range(len(data)):
-        if data[x].get("completed")is False:
-            datetime_object = datetime.strptime
-            if datetime.now() > data[x].get("due"):
 
-                print("overdue task found")
-job()
+        if data[x].get("completed")is False:
+
+            print("found a task that was not completed")
+
+            datetime_object = datetime.datetime.strptime(data[x].get("due"), "%Y-%m-%dT%H:%M:%SZ" )
+
+            if current_datetime > datetime_object:
+
+                print("task past due! oh NO!!!!!!!!")
+                time.sleep(1)
+                print("DOOM!")
+                set_sleep = 50
+                print("sleeping for: ", set_sleep)
+
+
+                account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+                auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+                client = Client(account_sid, auth_token)
+
+
+                message = client.messages.create(
+                    messaging_service_sid = os.getenv('MESSAGE_SID'),
+                    body='hello again',
+                    to=os.getenv('PHONE_NUMBER')
+                    )
+
+                print("sent doom msg")
+
+                break
+            else:
+                print("You've still got time!")
+# job(data)
+
+
+
 while True:
     run_pending()
-    time.sleep(1)
+    time.sleep(set_sleep)
+    print("happening")
 
 
-# [{'id': 15, 'title': 'change 15', 'description': 'plase help', 'completed': False, 'due': '2220-05-21T00:00:00Z', 'created_at'
-#  => => # : '2022-06-22T21:35:51.782434Z', 'updated_at': '2022-06-23T00:29:00.601553Z', 'owner': 1}, {'id': 12, 'title': 'test', 'descri
-#  => => # ption': '', 'completed': True, 'due': '2220-05-21T00:00:00Z', 'created_at': '2022-06-22T18:24:49.828285Z', 'updated_at': '2022
-#  => => # -06-23T00:29:09.470164Z', 'owner': 1}]
+
+
